@@ -10,7 +10,6 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
-
 /**
  * Implementation of a Map using a binary search tree.
  * 
@@ -70,10 +69,28 @@ public class MyTreeMap<K, V> implements Map<K, V> {
 		// something to make the compiler happy
 		@SuppressWarnings("unchecked")
 		Comparable<? super K> k = (Comparable<? super K>) target;
-		
-		// the actual search
-        // TODO: Fill this in.
-        return null;
+		Node currentNode = root;
+		while(currentNode != null){
+			// System.out.println("the current node is " + currentNode.key + 
+			// 	"the node to find is " + k);
+			if (k.compareTo(currentNode.key) == 0) {
+				// System.out.println("WE FOUND THE NODE!");
+				return currentNode;
+			}
+
+			else if(k.compareTo(currentNode.key) < 0) {
+				currentNode = currentNode.left;
+				// System.out.println("moved to the left");
+			}
+
+			else {
+				currentNode = currentNode.right;
+				// System.out.println("moved to the right");
+			}
+
+		}
+
+		return null;
 	}
 
 	/**
@@ -92,7 +109,40 @@ public class MyTreeMap<K, V> implements Map<K, V> {
 
 	@Override
 	public boolean containsValue(Object target) {
-		return false;
+		Node currentNode = root;
+		Set<V> values = new LinkedHashSet<V>();
+		values = containsValueHelper(root, values);
+		//System.out.println(values);
+		return (values.contains(target));
+	
+
+
+	}
+
+	/**
+	 * recursive helper method
+	 * visits every node in the tree (in order) and accumulates the nodes' keys in 
+	 * a set
+	 * @param Node (root) and empty set
+	 * @return arrayList Obj containing all of the trees' nodes' values
+	 */
+
+	private Set<V> containsValueHelper (Node node, Set<V> result){
+
+		if (node.left != null){
+		containsValueHelper(node.left, result);
+		}	
+
+		result.add(node.value);
+
+		
+
+		if (node.right != null){
+		containsValueHelper(node.right, result);
+		}
+
+		return result;
+
 	}
 
 	@Override
@@ -117,8 +167,31 @@ public class MyTreeMap<K, V> implements Map<K, V> {
 	@Override
 	public Set<K> keySet() {
 		Set<K> set = new LinkedHashSet<K>();
-        // TODO: Fill this in.
+        set = keySetHelper(root, set);
 		return set;
+	}
+
+	/* resursive helper 
+	 * same logic as with the contains value helper 
+	 */
+
+	private Set<K> keySetHelper (Node node, Set<K> result){
+		// inOrder traversals: left, visit, right
+
+		if (node.left != null){
+		keySetHelper(node.left, result);
+		}	
+
+		result.add(node.key);
+
+		
+
+		if (node.right != null){
+		keySetHelper(node.right, result);
+		}
+
+		return result;
+
 	}
 
 	@Override
@@ -126,17 +199,58 @@ public class MyTreeMap<K, V> implements Map<K, V> {
 		if (key == null) {
 			throw new NullPointerException();
 		}
-		if (root == null) {
+		else if (root == null) {
 			root = new Node(key, value);
 			size++;
 			return null;
 		}
+
 		return putHelper(root, key, value);
 	}
 
+	/* 
+	 * recursive helper 
+	 * if a node with the same key already exists, assign the key a new value
+	 * otherwise, insert the a new Node at the appropriate 
+	 * location in the binary search tree
+	 */
+
 	private V putHelper(Node node, K key, V value) {
-        // TODO: Fill this in.
-        return null;
+
+		if(findNode(key) != null){
+        	Node changeNode = findNode(key);
+        	V oldValue = changeNode.value;
+        	changeNode.value = value;
+        	return oldValue;
+        }
+
+   		//makes the key (of type K) a comparable object 
+		Comparable<? super K> k = (Comparable<? super K>) key;
+
+		
+		if (k.compareTo(node.key) < 0){
+			//if the node is a leaf, we can add the new node here
+			if (node.left == null){
+				node.left = new Node(key,value);
+				// make sure to update the size of the tree
+				size++;
+			//otherwise, we want to recursively check the the left side of the ree
+			} else
+				putHelper(node.left, key, value);
+		} 
+
+		// we do the same with the right side of the tree;
+		else {
+			if (node.right == null){
+				node.right = new Node(key,value);
+				size ++;
+			} else
+				putHelper(node.right,key,value);
+		}
+
+		return null;
+
+        
 	}
 
 	@Override
